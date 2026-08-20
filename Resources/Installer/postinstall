@@ -1,0 +1,18 @@
+#!/bin/zsh
+set -u
+
+# Installer scripts run as root. Hand the first launch back to the logged-in
+# console user so the accessory app and its launch-at-login item belong to that
+# user rather than root. On a login window or headless install, the user can
+# launch the app normally after installation.
+app_path="/Applications/MenuMonitor.app"
+console_user="$(/usr/bin/stat -f '%Su' /dev/console 2>/dev/null || true)"
+if [[ -n "$console_user" && "$console_user" != "root" && "$console_user" != "loginwindow" && -d "$app_path" ]]; then
+    console_uid="$(/usr/bin/id -u "$console_user" 2>/dev/null || true)"
+    if [[ -n "$console_uid" ]]; then
+        /bin/launchctl asuser "$console_uid" /usr/bin/open -gj "$app_path" >/dev/null 2>&1 || true
+        /bin/launchctl asuser "$console_uid" "$app_path/Contents/MacOS/MenuMonitor" --register-login-item >/dev/null 2>&1 || true
+    fi
+fi
+
+exit 0
