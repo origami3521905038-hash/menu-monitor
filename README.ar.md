@@ -137,7 +137,7 @@ MenuMonitorProbe    أداة تحقق من مؤشرات سطر الأوامر
 
 ```bash
 swift build -c debug
-python3 tests/validate_repo.py
+python3 Tests/validate_repo.py
 ```
 
 يتضمن المصدر اختبارات لحالات المؤشرات والوقت الأحادي وحالات الطاقة وشروط تجاوز الطاقة وتنسيق القيم، ويمكن تشغيل `swift test -c debug` عبر سلسلة أدوات Xcode المكتملة. يتحقق GitHub Actions من بناء Swift وروابط الوثائق وبنية المستودع.

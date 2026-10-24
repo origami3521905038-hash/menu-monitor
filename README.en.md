@@ -143,7 +143,7 @@ MenuMonitorProbe    command-line metric validation
 
 ```bash
 swift build -c debug
-python3 tests/validate_repo.py
+python3 Tests/validate_repo.py
 ```
 
 The source includes tests for metric states, monotonic elapsed time, power states, bypass-power conditions, and value formatting; a complete Xcode toolchain can run `swift test -c debug`. GitHub Actions validates the Swift build, documentation links, and repository structure.

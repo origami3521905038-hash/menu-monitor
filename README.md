@@ -147,7 +147,7 @@ MenuMonitorProbe    command-line metric validation
 
 ```bash
 swift build -c debug
-python3 tests/validate_repo.py
+python3 Tests/validate_repo.py
 ```
 
 源码包含指标状态、时间单调性、功耗状态、旁路供电条件与数值格式测试；项目完整 Xcode 工具链可以执行 `swift test -c debug`。GitHub Actions 会自动执行 Swift 构建、文档链接和仓库结构校验。

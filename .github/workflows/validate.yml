@@ -14,5 +14,5 @@ jobs:
       - name: Swift build
         run: swift build -c debug
       - name: Repository validation
-        run: python3 tests/validate_repo.py
+        run: python3 Tests/validate_repo.py
 
