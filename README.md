@@ -1,127 +1,165 @@
-# 为什么是性能简读
+# Menu Monitor · 性能简读
 
-市面上不少系统监控类应用要么本身就很「重」，要么需要联网上报数据，要么安装时索要常驻的管理员权限。性能简读反其道而行：用原生 Swift 6 直接调用 IOKit / IOReport 读取系统接口，不使用 Electron、不使用 WebView；应用是不占 Dock 的 accessory 程序，完全离线运行，采集过程不请求管理员权限，也没有常驻的守护进程。
+<p><a href="README.md"><u>简体中文</u></a> · <a href="README.en.md"><u>English</u></a> · <a href="README.ar.md"><u>العربية</u></a></p>
 
-点击菜单栏图标展开性能简读面板，查看四类指标的实时数值，以及最近 60 秒的变化趋势：
+<div align="center">
+  <img src="docs/images/hero-menu-monitor.jpg" alt="Menu Monitor macOS dashboard and menu bar panel" width="100%">
+</div>
 
-- 内存压力、驻留内存估算、压缩内存和当前交换内存
-- 总体处理器利用率、逐核利用率和负载平均值
-- Mac 支持时提供保守的 CPU + GPU 芯片功耗估算；面板详情行同时显示 CPU/GPU 温度
-- 已确认的电池充电功率和适配器额定功率
-- 设置中可切换中文/English、选择菜单栏指标和显示模式；指标告警会改变标题语义色
+> 一款轻量、优雅的原生 macOS 菜单栏工具，实时掌握系统性能、温度与电源状态。
 
-## 隐私与安全边界
+[![Platform](https://img.shields.io/badge/macOS-26%2B-111827)](#环境要求)
+[![Swift](https://img.shields.io/badge/Swift-6.2-f05138)](#技术架构)
+[![Offline](https://img.shields.io/badge/network-offline-2f7d55)](#隐私与本地运行)
+[![Validation](https://img.shields.io/badge/build-GitHub%20Actions-2f7d55)](.github/workflows/validate.yml)
+[![License](https://img.shields.io/badge/license-MIT-6f8fb3)](LICENSE)
 
-网络请求：无——源码静态扫描与运行时网络句柄检查均不包含网络路径
-遥测 / 统计 SDK：无
-云同步 / 自动更新检查：无，也没有网络服务端
-数据采集范围：仅本机系统接口（IOKit、IOPS、IOReport）
-管理员权限：采集本身不请求；复制到 /Applications 时可能出现一次系统授权，与读取指标无关
-常驻进程：无 SMC Helper、无守护进程、无持续 root 进程
+性能简读（Menu Monitor）把常用系统状态放进 macOS 菜单栏。点击图标即可查看内存、CPU、系统功耗、温度、充电功率和最近 60 秒趋势，不需要打开大型监控窗口，也不会在 Dock 中长期占位。
 
-## 实测性能
+## 一眼掌握 Mac 状态
 
-监控工具本身的开销，往往是用户最先关心的问题。以下数据来自验收测试环境，供参考。
-测试环境：macOS 26.5.2 · Apple Silicon 八核
+| 指标 | 实时信息 |
+| --- | --- |
+| Memory | 内存压力、驻留内存估算、压缩内存、Swap |
+| CPU | 总体利用率、逐核利用率、Load Average |
+| System Power | CPU / GPU 芯片功耗估算、CPU / GPU 温度 |
+| Charging Power | 充电功率、适配器功率、Power bypass 状态 |
 
-CPU 占用（面板关闭，5 次采样）	0.0% / 0.8% / 0.0% / 1.2% / 0.6%
-本轮观测 CPU 峰值	约 1.2%
-进程 footprint 峰值	约 13 MB
-ps 报告的 RSS	约 34–40 MB（含共享映射，不能直接等同于私有内存）
+菜单栏支持自定义显示项、紧凑模式与带标签模式，并可切换中文和 English。指标进入告警区间时，对应标题会使用系统语义色提示。
 
-## 环境要求
+## 真实界面
 
-- macOS 26（Tahoe）或更高版本
-- Xcode 26 或更高版本
-- 当前账户可以写入 `/Applications`，或只在复制应用时批准一次系统管理员提示
+### 菜单栏实时面板
 
-本地构建不需要 Developer ID 或 Team ID。应用使用 ad-hoc 签名，不做公证。
+<div align="center">
+  <img src="docs/images/live-panel.jpg" alt="Menu Monitor live panel on macOS" width="90%">
+</div>
 
-## 安装
+菜单栏常驻显示当前关心的指标，点击后展开 Liquid Glass 面板，查看完整数值、逐核负载、温度、电源状态和 60 秒趋势图。
 
-在项目目录执行：
+### 设置与个性化
 
-```zsh
+<div align="center">
+  <img src="docs/images/settings.jpg" alt="Menu Monitor preferences window" width="90%">
+</div>
+
+在设置窗口中可以：
+
+- 选择菜单栏要显示的指标；
+- 切换 Compact / Labeled 显示模式；
+- 切换中文 / English；
+- 开启或关闭登录时启动。
+
+## 为什么好用
+
+- **原生 Swift 6 + SwiftUI**：与 macOS 界面体系深度融合，使用 Swift Charts 呈现趋势。
+- **轻量常驻**：面板关闭时降低采样频率，打开面板后再加载完整界面和趋势历史。
+- **完全离线**：无网络请求、无遥测 SDK、无云同步、无更新检查。
+- **无 Electron / WebView**：原生应用架构，不占用 Dock，不引入浏览器运行时。
+- **本地采集**：通过 IOKit、IOPS 与 IOReport 读取系统指标。
+- **细节完整**：支持温度详情、逐核负载、充电功率、旁路供电识别与标题告警色。
+
+## 下载安装
+
+前往 [Latest Release](https://github.com/origami3521905038-hash/menu-monitor/releases/latest) 下载最近的通用 DMG。
+
+安装流程：
+
+1. 打开 DMG；
+2. 双击 `MenuMonitor-Installer.pkg`；
+3. 按安装器提示完成安装；
+4. 安装后应用会启动菜单栏图标并尝试注册登录时启动。
+
+也可以直接把 `MenuMonitor.app` 拖入“应用程序”。此方式不会自动注册登录项。
+
+## 从源码构建
+
+环境要求：macOS 26+、Xcode 26+、Swift 6.2+。
+
+```bash
+git clone https://github.com/origami3521905038-hash/menu-monitor.git
+cd menu-monitor
+swift test -c debug
 ./install.sh
 ```
 
-脚本会构建 arm64 + x86_64 通用应用，验证 ad-hoc 签名，安装到
-`/Applications/MenuMonitor.app`，启动应用，并确认登录项已启用。若系统保护
-`/Applications`，只会在复制应用时请求一次管理员授权，与指标采集无关。
+只构建、不安装：
 
-在其他 Mac 上首次打开 ad-hoc、未公证应用时，Gatekeeper 可能要求在“系统设置”
-中手动批准一次。脚本不会关闭或绕过 Gatekeeper，也不会移除已有隔离标记。
-
-只构建不安装：
-
-```zsh
+```bash
 ./build.sh
 ```
 
-构建结果位于 `build/MenuMonitor.app`。
+生成 DMG：
 
-生成可分发的本地 DMG（仍为 ad-hoc、未公证）：
-
-```zsh
+```bash
 ./package-dmg.sh
 ```
 
-只生成安装器包：
+生成安装器包：
 
-```zsh
+```bash
 ./package-pkg.sh
 ```
 
-默认输出位于 `dist/MenuMonitor-<版本>-universal.dmg`（版本号由
-`Resources/Info.plist` 自动读取；也可以把 `dist/` 下的目标文件名作为 `package-dmg.sh` 的第一个参数传入）。镜像中同时包含
-`MenuMonitor-Installer.pkg`、应用本体和指向 `/Applications` 的快捷方式。
-在其他 Mac 上双击 `MenuMonitor-Installer.pkg`，按安装器提示完成安装；安装完成后会尝试以当前登录用户启动菜单栏应用并注册开机自启。
-也可以直接把应用拖入“应用程序”，但这种方式不会自动注册登录项。
-由于当前没有 Developer ID，安装器包本身也未公证；若系统拦截安装器，请在 Finder 中右键
-`MenuMonitor-Installer.pkg` 选择“打开”，再按 macOS 提示确认一次。
-
-维护者发布源码和 DMG 时，请按仓库内的
-[`GITHUB_RELEASE_CHECKLIST.md`](GITHUB_RELEASE_CHECKLIST.md) 逐项复核版本号、签名、架构、校验值和发布说明。
-
 卸载：
 
-```zsh
+```bash
 ./uninstall.sh
 ```
 
-卸载会先确认登录项已变为 `notRegistered`，然后只删除
-`/Applications/MenuMonitor.app`、`com.local.menumonitor` 偏好文件和应用的
-精确支持目录（如果存在）。
+## 隐私与本地运行
 
-## 数据口径与责任声明
+- 指标采集只访问本机系统接口。
+- 应用不发起网络请求，不包含遥测、统计 SDK 或云同步。
+- 指标采集不要求管理员权限。
+- 项目没有 SMC Helper、守护进程或持续 root 进程。
+- 复制到 `/Applications` 时，系统可能请求一次安装授权，与指标读取无关。
 
-•系统功耗是基于 CPU、GPU 及（设备提供时）DRAM 能量计数推导出的保守芯片估算，不等同于墙上功耗、适配器输入功率或整机电表读数，也不覆盖显示屏、存储、无线电和充电损耗。
-•部分机型、系统版本或硬件状态可能不提供 IOReport 或温度通道，此时显示「不可用」属于预期行为，而非软件缺陷。
-•充电功率仅在公共电源状态与电池注册表状态相互确认后才会计算并显示。
-•「旁路供电」仅在外接电源、电池满电、零充电电流、正适配器功率四个条件同时成立时才会显示。
+## 实测运行开销
 
-## 适用场景
+测试环境：macOS 26.5.2 · Apple Silicon 8 核。
 
-适合————个人日常观察系统状态、性能排障、开发调试参考、了解功耗与温度变化趋势
-不适合————安全关键控制场景、设备保护机制、能耗计费、性能认证
+| 项目 | 实测结果 |
+| --- | --- |
+| 面板关闭时 CPU 采样 | `0.0% / 0.8% / 0.0% / 1.2% / 0.6%` |
+| CPU 峰值 | 约 `1.2%` |
+| 进程 footprint 峰值 | 约 `13 MB` |
+| `ps` RSS | 约 `34–40 MB`，包含共享映射 |
 
-## 目录结构
+## 数据口径
+
+System Power 是基于 CPU、GPU 及可用 DRAM 能量计数推导出的芯片功耗估算，不等同于墙上功耗、适配器输入功率或整机电表读数。
+
+温度、功耗通道和旁路供电状态来自当前硬件与系统接口。界面会根据实际可用信号展示对应信息。
+
+## 技术架构
 
 ```text
-Sources/MenuMonitorCore/    采集器、模型和采样协调器
-Sources/CIOReportRuntime/   隔离的私有 IOReport C 运行时适配器
-Sources/MenuMonitorApp/     AppKit accessory 应用、状态栏和安装行为
-Sources/MenuMonitorUI/      可按需加载的 SwiftUI Liquid Glass 界面 bundle
-Sources/MenuMonitorProbe/   命令行采集验证工具
-Tests/                      模型与采集器行为测试
-Resources/                  应用和 UI bundle 元数据
+MenuMonitorApp      AppKit accessory app / menu bar / preferences
+MenuMonitorUI       SwiftUI + Swift Charts Liquid Glass panel
+MenuMonitorCore     metrics collectors and sampling coordination
+CIOReportRuntime    isolated IOReport C runtime
+CIOHIDTemperature   isolated IOHID temperature runtime
+MenuMonitorProbe    command-line metric validation
 ```
 
-## 已知限制
+## 构建与仓库校验
 
-- IOReport 是私有且依赖硬件的接口，未来 macOS、Intel Mac、台式机或部分
-  Apple Silicon 机型可能无法提供数据；此时显示“不可用”是受支持的安全结果。
-- 芯片估算不包含显示屏、存储、无线电、充电损耗及未被接受通道覆盖的组件。
-- 本版本采用 ad-hoc 签名，不是 App Store、Developer ID、公证或自动更新发行版；
-  本机可直接安装，其他 Mac 首次打开可能需要在“系统设置 → 隐私与安全性”手动批准。
-- 登录项注册有意限制为从 `/Applications/MenuMonitor.app` 安装副本执行。
+```bash
+swift build -c debug
+python3 tests/validate_repo.py
+```
+
+源码包含指标状态、时间单调性、功耗状态、旁路供电条件与数值格式测试；项目完整 Xcode 工具链可以执行 `swift test -c debug`。GitHub Actions 会自动执行 Swift 构建、文档链接和仓库结构校验。
+
+## 项目文档
+
+- [GitHub 项目介绍](GITHUB_PROJECT_INTRO.md)
+- [发布检查清单](GITHUB_RELEASE_CHECKLIST.md)
+- [v1.0.1 发布说明](RELEASE_NOTES-v1.0.1.md)
+- [安全说明](SECURITY.md)
+- [参与共建](CONTRIBUTING.md)
+
+## License
+
+MIT License。详见 [LICENSE](LICENSE)。
